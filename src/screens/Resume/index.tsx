@@ -22,6 +22,7 @@ import { addMonths, format, subMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
+import { useAuth } from "../../hooks/auth";
 
 export interface TransactionData {
   type: "positive" | "negative";
@@ -43,6 +44,7 @@ export function Resume() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [totalByCategories, setTotalCategories] = useState<CategoryData[]>([]);
+  const { user } = useAuth();
   const theme = useTheme();
   function handleDateChange(action: "next" | "prev") {
     if (action == "next") {
@@ -57,8 +59,8 @@ export function Resume() {
   async function loadData() {
     setIsLoading(true);
 
-    const datakey = "@gofinances:transactions";
-    const response = await AsyncStorage.getItem(datakey);
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
+    const response = await AsyncStorage.getItem(dataKey);
     const responseFormatted = response ? JSON.parse(response) : [];
 
     const expensives = responseFormatted.filter(

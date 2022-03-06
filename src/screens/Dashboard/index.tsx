@@ -9,6 +9,7 @@ import {
   TransactionCard,
   TransactionCardProps,
 } from "./../../components/TransactionCard/index";
+import { useAuth } from "../../hooks/auth";
 
 import {
   Container,
@@ -41,11 +42,13 @@ interface HighlightData {
 interface DataListProps extends TransactionCardProps {
   id: string;
 }
+
 export function Dashboard() {
   const [transactions, setTransactions] = useState<DataListProps[]>([]);
   const [highlightData, setHighlightData] = useState<HighlightData>(
     {} as HighlightData
   );
+  const { signOut, user } = useAuth();
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   // toda hora que entra na tela chama essa função
@@ -56,7 +59,7 @@ export function Dashboard() {
   );
   function getLastTransationDate(
     collection: DataListProps[],
-    tpye: "positive" | "negative"
+    type: "positive" | "negative"
   ) {
     const lastTransaction = new Date(
       Math.max.apply(
@@ -72,7 +75,7 @@ export function Dashboard() {
     )}`;
   }
   async function loadTransactions() {
-    const dataKey = "@gofinances:transactions";
+    const dataKey = `@gofinances:transactions_user:${user.id}`;
     const response = await AsyncStorage.getItem(dataKey);
     const transactions = response ? JSON.parse(response) : [];
     console.log(transactions);
@@ -120,7 +123,10 @@ export function Dashboard() {
       transactions,
       "negative"
     );
-    const totalInterval = `01 a ${lastTransactionExpensive} `;
+    const totalInterval =
+      lastTransactionExpensive === `0`
+        ? "Nao ha transacoes"
+        : `01 a ${lastTransactionExpensive} `;
 
     setHighlightData({
       entries: {
@@ -128,14 +134,20 @@ export function Dashboard() {
           style: "currency",
           currency: "BRL",
         }),
-        lastTransactions: `Última entrada dia ${lastTransactionEntries}`,
+        lastTransactions:
+          lastTransactionEntries === "0"
+            ? "Nao ha transacoes"
+            : `Última entrada dia ${lastTransactionEntries}`,
       },
       expensives: {
         amount: expensiveTotal.toLocaleString("pr-BR", {
           style: "currency",
           currency: "BRL",
         }),
-        lastTransactions: `Última saída dia ${lastTransactionExpensive}`,
+        lastTransactions:
+          lastTransactionExpensive === "0"
+            ? "Nao ha transacoes"
+            : `Última saída dia ${lastTransactionExpensive}`,
       },
       total: {
         amount: total.toLocaleString("pr-BR", {
@@ -152,41 +164,6 @@ export function Dashboard() {
     loadTransactions();
   }, []);
 
-  // [
-  // {
-  //   id: "1",
-  //   type: "positive",
-  //   title: "Desenvolvimento de site",
-  //   amount: "R$ 17.200,00",
-  //   category: {
-  //     name: "Vendas",
-  //     icon: "dollar-sign",
-  //   },
-  //   date: "23/05/2022",
-  // },
-  // {
-  //   id: "2",
-  //   type: "negative",
-  //   title: "Hamburgueria",
-  //   amount: "R$ 400,00",
-  //   category: {
-  //     name: "Alimentação",
-  //     icon: "coffee",
-  //   },
-  //   date: "23/05/2022",
-  // },
-  // {
-  //   id: "3",
-  //   type: "negative",
-  //   title: "Aluguel de apartamento",
-  //   amount: "R$ 2.400,00",
-  //   category: {
-  //     name: "Casa",
-  //     icon: "shopping-bag",
-  //   },
-  //   date: "23/05/2022",
-  // },
-  // ];
   return (
     <Container>
       {isLoading ? (
@@ -200,16 +177,16 @@ export function Dashboard() {
               <UserInfo>
                 <Photo
                   source={{
-                    uri: "https://images.unsplash.com/photo-1542080681-b52d382432af?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1534&q=80",
+                    uri: user.photo,
                   }}
                 />
                 <User>
                   <UserGreeting>Olá,</UserGreeting>
-                  <UserName>Juliana</UserName>
+                  <UserName>{user.name}</UserName>
                 </User>
               </UserInfo>
 
-              <LogoutButton onPress={() => {}}>
+              <LogoutButton onPress={signOut}>
                 <Icon name="poweroff" />
               </LogoutButton>
             </UserWrapper>

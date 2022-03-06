@@ -35,6 +35,7 @@ const schema = Yup.object().shape({
 });
 
 import { CategorySelect } from "../CategorySelect";
+import { useAuth } from "./../../hooks/auth";
 interface CategoryProps {
   key: string;
   name: string;
@@ -46,8 +47,9 @@ interface FormData {
 export function Register() {
   const [transactionType, setTransactionType] = useState("");
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const { user } = useAuth();
 
-  const dataKey = "@gofinances:transactions";
+  const dataKey = `@gofinances:transactions_user:${user.id}`;
 
   // const [name, setName] = useState("");
   // const [amount, setAmount] = useState("");
